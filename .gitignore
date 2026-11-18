@@ -8,6 +8,9 @@
 *.obj
 *.o
 
+# Bo qua file mo phong NetAnim nang (>100MB gay loi GitHub)
+*animation.xml
+
 # Bo qua bai tap cu tren lop
 Bt*
 bt*

@@ -4,6 +4,8 @@
 #include "ns3/mobility-module.h"
 #include "ns3/wifi-module.h"
 #include "ns3/applications-module.h"
+#include "ns3/netanim-module.h"
+#include "ns3/flow-monitor-module.h"
 
 #include <fstream>
 #include <iostream>
@@ -140,8 +142,29 @@ main(int argc, char* argv[])
     Ptr<PacketSink> sink = DynamicCast<PacketSink>(sinkApp.Get(0));
     Simulator::Schedule(Seconds(1.5), &SampleMetrics, nodes.Get(0), nodes.Get(1), sink, 0.5);
 
+    // Cau hinh hoat hoa truc quan NetAnim
+    AnimationInterface anim("uav_animation.xml");
+    anim.SetMaxPktsPerTraceFile(1500000);
+    anim.EnablePacketMetadata(true);
+
+    // Tram mat dat GCS: Mau xanh la
+    anim.UpdateNodeDescription(nodes.Get(0), "GCS (Tram mat dat)");
+    anim.UpdateNodeColor(nodes.Get(0), 0, 180, 0);
+    anim.UpdateNodeSize(0, 15.0, 15.0);
+
+    // May bay Drone UAV: Mau do
+    anim.UpdateNodeDescription(nodes.Get(1), "UAV (Drone)");
+    anim.UpdateNodeColor(nodes.Get(1), 220, 0, 0);
+    anim.UpdateNodeSize(1, 15.0, 15.0);
+
+    // Cai dat FlowMonitor de xuat thong so Throughput vao NetAnim
+    FlowMonitorHelper flowHelper;
+    Ptr<FlowMonitor> flowMonitor = flowHelper.InstallAll();
+
     Simulator::Stop(Seconds(simTime + 0.1));
     Simulator::Run();
+
+    flowMonitor->SerializeToXmlFile("uav_flowmon.xml", true, true);
 
     uint64_t totalBytes = sink->GetTotalRx();
     double avgThroughput = (totalBytes * 8.0) / ((simTime - 1.0) * 1000000.0);
